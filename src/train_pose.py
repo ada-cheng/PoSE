@@ -219,15 +219,17 @@ def train():
         config.rope_scaling={"type": training_args.rope_scaling_type, "factor": training_args.rope_scaling_factor}
         if training_args.rope_scaling_type == "yarn":
             config.rope_scaling["original_max_position_embeddings"] = training_args.model_max_position_embeddings
-        
+
+    local_path = '/home/zlzheng/Workspace/xycheng/PoSE/src/llama2_7b'
+
     model = LlamaForCausalLM.from_pretrained(
-        model_args.model_name_or_path,
+        local_path,
         cache_dir=training_args.cache_dir,
         config=config,
     )
 
     tokenizer = transformers.LlamaTokenizer.from_pretrained(
-        model_args.model_name_or_path,
+        'meta-llama/Llama-2-7b-hf',
         cache_dir=training_args.cache_dir,
         padding_side="right",
         use_fast=True,
@@ -246,10 +248,11 @@ def train():
                 "unk_token": DEFAULT_UNK_TOKEN,
             }
         )
-
-    raw_train_datasets = load_dataset('json', data_files=data_args.train_data_path, split="train", cache_dir=training_args.cache_dir)
-    raw_valid_datasets = load_dataset('json', data_files=data_args.valid_data_path, split="train", cache_dir=training_args.cache_dir)
-    raw_test_datasets = load_dataset('json', data_files=data_args.test_data_path, split="train", cache_dir=training_args.cache_dir)
+    print(data_args.train_data_path)
+    
+    raw_train_datasets = load_dataset("wikitext",'wikitext-2-v1', split="train")
+    raw_valid_datasets = load_dataset("wikitext",'wikitext-2-v1', split="validation")
+    raw_test_datasets = load_dataset("wikitext",'wikitext-2-v1', split="test")
     if training_args.local_rank > 0: 
         torch.distributed.barrier()
 
